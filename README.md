@@ -1,5 +1,9 @@
 # Data-Leakage-Attack-against-SVD
 
+## Requirements
+- Numpy
+- scipy.optimize (for Differential Evolution)
+
 ## How to use
 1. Prepare X (original data) and its SVD result "U"
 2. Chose "U" and "X" in each script
