@@ -1,0 +1,18 @@
+useAttackConfig: False     # if you want to use attack_config for evaluation_condig, turn True
+
+DataConfig:
+  F_all: 9              # The number of all features
+  samples: 4000         # The number of all samples 
+  dataset: "mimic"      # Use dataset
+  numGTknown: 1         # The number of the groudtruth value the adversary knows
+  numTrials: 20         # The number of Trials
+  display_DE: True      # Display the itermediate results of Differential Evolution
+
+AdversaryKnowledge:
+  SigmaFlag: True
+  MaxValueFlag: False
+  MeanValueFlag: True
+  VarValueFlag: True
+  PointValue:
+    Flag: True
+    Num: 3

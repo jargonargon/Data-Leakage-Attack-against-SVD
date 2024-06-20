@@ -1,0 +1,21 @@
+DataConfig:
+  F_all: 9              # The number of all features
+  samples: 4000         # The number of all samples 
+  dataset: "mimic"      # Use dataset
+  numTrials: 20         # The number of Trials
+
+AdversaryKnowledge:
+  SigmaFlag: True       # adversary knows sigma?
+  MaxValueFlag: False   # adversary knows Max? 
+  MeanValueFlag: True   # adversary knows mean?
+  VarValueFlag: True    # adversary knows variance?
+  PointValue:
+    Flag: True         # adversary knows datapoint?
+    Num: 6              # how many?
+    lambda: 0.1         # coefficient for loss
+
+DifferentialEvolutionConfig:
+  maxiter: 100          # MaxIteration
+  popsize: 30           # Population size
+  display: True         # Display the itermediate results of Differential Evolution
+  strategy: 'best1bin'  # Strategy of DE
