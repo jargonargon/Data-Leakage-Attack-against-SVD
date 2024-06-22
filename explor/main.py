@@ -19,12 +19,12 @@ def main():
     num_GT_known = adversary_config['PointValue']['Num']
     num_trials = data_config['numTrials']
 
-    TrueMaxValues = np.array([6.3, 2.2, 2.4, 4.3, 5.0, 2.6, 2.8, 2.0, 1.4])
     path = decide_path(dataset, samples, F_all, adversary_config)
     path = make_directory_if_not_exist(path, True)
 
     # Load data
     X_matrix, U_matrix, Sigma_matrix = load_data(samples, F_all, dataset)
+    TrueMaxValues = np.max(X_matrix, axis=0)[::-1]
 
     for F_rho in range(1, F_all):
         F_alpha = F_all - F_rho
