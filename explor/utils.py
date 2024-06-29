@@ -8,6 +8,9 @@ def RMSE(x, y):
     """
     return np.sqrt(np.mean((x - y) ** 2))
 
+def MAE(x,y):
+    return np.mean(np.abs(x - y))
+
 def making_null_space(X_matrix, s, U_matrix):
     """
     Generate null space.
@@ -66,13 +69,17 @@ def decide_path(dataset, samples, F_all, adversary_config):
     else:
         path += "withoutSigma/"
         make_directory_if_not_exist(path, False)
+    
+    path += (adversary_config["Loss"] + "+")
 
     if adversary_config["PointValue"]["Flag"]:
-        path += f"{adversary_config['PointValue']['Num']}points-"
+        path += f"{adversary_config['PointValue']['Num']}pointsX{adversary_config['PointValue']['knowCols']}"
     if adversary_config["MaxValueFlag"]:
         path += "max"
     if adversary_config["MeanValueFlag"]:
         path += "mean"
     if adversary_config["VarValueFlag"]:
         path += "var"
+    if adversary_config["EntropyFlag"]:
+        path += "ent"
     return path

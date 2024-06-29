@@ -1,5 +1,5 @@
 import numpy as np
-from utils import RMSE, making_null_space, greedy_pair_selection
+from utils import RMSE, MAE, making_null_space, greedy_pair_selection
 
 def construct_rotation_matrix(params, F_rho):
     """
@@ -20,7 +20,7 @@ def construct_rotation_matrix(params, F_rho):
     return rotation_matrix
 
 def objective(params, X_alpha, X_rho, VT_alpha_complement, U_matrix, Sigma_matrix, F_all, F_rho, 
-              knowingDataIndex, TrueMaxValues, adversary_config):
+              knowingDataIndex, TrueMaxValues, adversary_config, knowCols):
     """
     Objective function for optimization.
     """
@@ -47,29 +47,43 @@ def objective(params, X_alpha, X_rho, VT_alpha_complement, U_matrix, Sigma_matri
         X_rho_candidate = U_matrix @ np.diag(sigmas) @ V_rho_candidate
 
     overall_loss = 0
+    Loss = eval(adversary_config["Loss"])
     
     # Calculate various losses
     if adversary_config["VarValueFlag"]:
         Variances = np.var(X_rho_candidate, axis=0)
-        var_loss = RMSE(Variances, np.ones(F_rho))
+        var_loss = Loss(Variances, np.ones(F_rho))
         overall_loss += var_loss
     
     if adversary_config["MaxValueFlag"]:
         MaxValue = np.max(abs(X_rho_candidate), axis=0)
-        max_loss = RMSE(MaxValue, TrueMaxValues[:F_rho])
+        reordered_MaxValue = greedy_pair_selection(np.array(TrueMaxValues[:F_rho]).reshape((1, F_rho)), 
+                                                   MaxValue.reshape((1, F_rho)), F_rho)
+        max_loss = Loss(reordered_MaxValue, TrueMaxValues[:F_rho])
         overall_loss += max_loss
 
     if adversary_config["MeanValueFlag"]:
         Means = np.mean(X_rho_candidate, axis=0)
-        mean_loss = RMSE(Means, np.zeros(F_rho))
+        mean_loss = Loss(Means, np.zeros(F_rho))
         overall_loss += mean_loss
 
+    if adversary_config["EntropyFlag"]:
+        entropies = []
+        for i in range(F_rho):
+            variance = np.var(X_rho_candidate[:, i], ddof=1)
+            if variance == 0:
+                entropies.append(0)
+            else:
+                entropy = 0.5 + 0.5 * np.log(2 * np.pi * variance)
+                entropies.append(entropy)
+        overall_loss += (sum(entropies) / F_rho)
+
     if adversary_config["PointValue"]["Flag"]:
-        columnIndex = np.arange(F_rho)
-        trueData = X_rho[knowingDataIndex][:, columnIndex]
-        generatedData = X_rho_candidate[knowingDataIndex][:, columnIndex]
+        # columnIndex = np.arange(F_rho)
+        trueData = X_rho[knowingDataIndex]
+        generatedData = X_rho_candidate[knowingDataIndex]
         reordered_generatedData = greedy_pair_selection(trueData, generatedData, F_rho)
-        data_loss = RMSE(trueData, reordered_generatedData)
+        data_loss = Loss(trueData[:knowCols], reordered_generatedData[:knowCols])
         overall_loss += data_loss * adversary_config['PointValue']['lambda']
 
     return overall_loss

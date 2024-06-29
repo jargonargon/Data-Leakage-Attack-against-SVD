@@ -19,14 +19,20 @@ def main():
     num_GT_known = adversary_config['PointValue']['Num']
     num_trials = data_config['numTrials']
 
+    
     path = decide_path(dataset, samples, F_all, adversary_config)
+    print("Dest: " + path)
+    check = input("Start the explor? (y/n)")
+    if check == "n":
+        print("abort.")
+        return
     path = make_directory_if_not_exist(path, True)
 
     # Load data
     X_matrix, U_matrix, Sigma_matrix = load_data(samples, F_all, dataset)
     TrueMaxValues = np.max(X_matrix, axis=0)[::-1]
 
-    for F_rho in range(1, F_all):
+    for F_rho in range(2, F_all):
         F_alpha = F_all - F_rho
         X_alpha = X_matrix[:, :F_alpha]
         X_rho = X_matrix[:, F_alpha:]
@@ -50,6 +56,9 @@ def main():
         output_path = f"{path}/{F_rho}-columns"
         make_directory_if_not_exist(output_path, False)
         knowing_data_index_all = np.random.default_rng().integers(0, samples, size=(num_trials, num_GT_known))
+        knowCols = adversary_config["PointValue"]["knowCols"]
+        if F_rho < float(knowCols):
+            knowCols = F_rho
 
         for record in range(num_trials):
             knowing_data_index = knowing_data_index_all[record]
@@ -59,7 +68,7 @@ def main():
                 objective,
                 bounds,
                 args=(X_alpha, X_rho, VT_alpha_complement, U_matrix, Sigma_matrix, F_all, F_rho, 
-                    knowing_data_index, TrueMaxValues, adversary_config),
+                    knowing_data_index, TrueMaxValues, adversary_config, knowCols),
                 strategy=DE_config["strategy"],
                 maxiter=DE_config["maxiter"],
                 popsize=DE_config["popsize"],
